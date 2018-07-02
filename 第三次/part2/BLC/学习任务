@@ -1,0 +1,25 @@
+区块的序列化 反序列化
+
+将区块存储到数据库
+以key value形式存储 类似字典
+
+    1. 序列化为字节数据
+    2. 当前区块的hash为key 以序列化后的字节数组为value
+    3. 除了所有的区块 还需存储最新的区块hash值 自定义key
+
+遍历数据库区块 (存储可能是乱序的)
+
+
+数据库操作
+    文档 https://github.com/boltdb/bolt
+    安装 go get "github.com/boltdb/bolt"
+    打开
+    创建
+    表
+    更新
+    查看
+
+
+命令行工具 CLI（在终端里执行程序）
+    flag
+    os.Args
