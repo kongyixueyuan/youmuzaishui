@@ -332,9 +332,14 @@ func (utxoSet *UTXOSet) Update()  {
 						txHash := hex.EncodeToString(in.ZQ_TxHash)
 
 						preTXoutputs := outsMap[txHash]
-						preTXoutputs.ZQ_UTXOS = append(preTXoutputs.ZQ_UTXOS, UTXOS...)
+						if preTXoutputs == nil {
 
-						outsMap[txHash] = preTXoutputs
+							outsMap[txHash] = &TXOutputs{UTXOS}
+						} else {
+
+							preTXoutputs.ZQ_UTXOS = append(preTXoutputs.ZQ_UTXOS, UTXOS...)
+							outsMap[txHash] = preTXoutputs
+						}
 					}
 				}
 

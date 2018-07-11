@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"crypto/ecdsa"
 	"bytes"
-	"publicChain/part4/BLC"
 )
 
 type Blockchain struct {
@@ -633,136 +632,33 @@ func (blockchain *Blockchain) ZQ_VerifyTransaction(tx *Transaction, txs []*Trans
 //返回map[string]*TXOutputs
 func (blockchain *Blockchain) ZQ_FindUTXOMap() map[string]*TXOutputs {
 
-	//找出所有已花费
-	ins := []*TXInput{}
-	//找出所有未花费
-	outsMap := make(map[string]*TXOutputs)
-
-	iterator := blockchain.Iterator()
-	for {
-		block := iterator.ZQ_Next()
-
-		//循环区块中的交易
-		for i := len(block.ZQ_Txs) - 1; i >= 0; i-- {
-
-			tx := block.ZQ_Txs[i]
-
-			for _, in := range tx.ZQ_Vins {
-				ins = append(ins, in)
-			}
-
-			utxos := []*UTXO{}
-			for index, out := range tx.ZQ_Vouts {
-
-				utxo := &UTXO{tx.ZQ_TxHash, index, out}
-				utxos = append(utxos, utxo)
-
-			}
-
-			outsMap[hex.EncodeToString(tx.ZQ_TxHash)] = &TXOutputs{utxos}
-		}
-
-		var hashInt big.Int
-		hashInt.SetBytes(block.ZQ_PrevBlockHash)
-
-		if hashInt.Cmp(big.NewInt(0)) == 0{
-			break
-		}
-	}
-
-	for _, in := range ins {
-
-		txHash := hex.EncodeToString(in.ZQ_TxHash)
-
-		txOutputs := outsMap[txHash]
-
-		if txOutputs == nil {
-			continue
-		}
-
-		fmt.Println("已花费：", txHash)
-		UTXOS := []*UTXO{}
-
-		isNeedDelete := false
-
-		for _, utxo := range txOutputs.ZQ_UTXOS {
-
-			if in.ZQ_Vout == utxo.ZQ_Index && bytes.Compare(utxo.ZQ_Output.ZQ_Ripemd160Hash, BLC.Ripemd160Hash(in.ZQ_PublicKey)) == 0{
-
-				fmt.Print("已花费：", utxo.ZQ_Output.ZQ_Value)
-				isNeedDelete = true
-			} else {
-				fmt.Print("有效：", utxo.ZQ_Output.ZQ_Value)
-				UTXOS = append(UTXOS, utxo)
-			}
-
-			fmt.Println()
-		}
-
-		if isNeedDelete == true {
-
-			if len(UTXOS) > 0 {
-				outsMap[txHash].ZQ_UTXOS = UTXOS
-			} else {
-				delete(outsMap, txHash)
-			}
-		}
-
-	}
-
-	return outsMap
-
-
-	////存储已花费UTXO信息
-	//var spentableUTXOSMAP = make(map[string][]*TXInput)
-	////存储有效的未花费
-	//var utxoMaps = make(map[string]*TXOutputs)
+	////找出所有已花费
+	//ins := []*TXInput{}
+	////找出所有未花费
+	//outsMap := make(map[string]*TXOutputs)
 	//
 	//iterator := blockchain.Iterator()
-	//
 	//for {
 	//	block := iterator.ZQ_Next()
 	//
+	//	//循环区块中的交易
 	//	for i := len(block.ZQ_Txs) - 1; i >= 0; i-- {
 	//
-	//		txOutputs := &TXOutputs{[]*UTXO{}}
-	//
 	//		tx := block.ZQ_Txs[i]
-	//		txHash := hex.EncodeToString(tx.ZQ_TxHash)
 	//
-	//		if tx.ZQ_IsCoinbaseTransaction() == false {
-	//
-	//			for _, inInput := range tx.ZQ_Vins{
-	//				txInputHash := hex.EncodeToString(inInput.ZQ_TxHash)
-	//				spentableUTXOSMAP[txInputHash] = append(spentableUTXOSMAP[txInputHash], inInput)
-	//			}
+	//		for _, in := range tx.ZQ_Vins {
+	//			ins = append(ins, in)
 	//		}
 	//
-	//		WorkOutLoop:
-	//		for index,out := range tx.ZQ_Vouts {
+	//		utxos := []*UTXO{}
+	//		for index, out := range tx.ZQ_Vouts {
 	//
-	//			isSpent := false
-	//			txInputs := spentableUTXOSMAP[txHash]
+	//			utxo := &UTXO{tx.ZQ_TxHash, index, out}
+	//			utxos = append(utxos, utxo)
 	//
-	//			if len(txInputs) > 0 {
-	//
-	//				for _, in := range txInputs {
-	//
-	//					if index == in.ZQ_Vout && bytes.Compare(out.ZQ_Ripemd160Hash, ZQ_Ripemd160Hash(in.ZQ_PublicKey)) == 0 {
-	//						isSpent = true
-	//						continue WorkOutLoop
-	//					}
-	//				}
-	//			}
-	//
-	//			if isSpent == false {
-	//				fmt.Printf("set: %d\n", out.ZQ_Value)
-	//				utxo := &UTXO{tx.ZQ_TxHash, index, out}
-	//				txOutputs.ZQ_UTXOS = append(txOutputs.ZQ_UTXOS, utxo)
-	//			}
 	//		}
 	//
-	//		utxoMaps[txHash] = txOutputs
+	//		outsMap[hex.EncodeToString(tx.ZQ_TxHash)] = &TXOutputs{utxos}
 	//	}
 	//
 	//	var hashInt big.Int
@@ -773,5 +669,108 @@ func (blockchain *Blockchain) ZQ_FindUTXOMap() map[string]*TXOutputs {
 	//	}
 	//}
 	//
-	//return utxoMaps
+	//for _, in := range ins {
+	//
+	//	txHash := hex.EncodeToString(in.ZQ_TxHash)
+	//
+	//	txOutputs := outsMap[txHash]
+	//
+	//	if txOutputs == nil {
+	//		continue
+	//	}
+	//
+	//	fmt.Println("已花费：", txHash)
+	//	UTXOS := []*UTXO{}
+	//
+	//	isNeedDelete := false
+	//
+	//	for _, utxo := range txOutputs.ZQ_UTXOS {
+	//
+	//		if in.ZQ_Vout == utxo.ZQ_Index && bytes.Compare(utxo.ZQ_Output.ZQ_Ripemd160Hash, BLC.Ripemd160Hash(in.ZQ_PublicKey)) == 0{
+	//
+	//			fmt.Print("已花费：", utxo.ZQ_Output.ZQ_Value)
+	//			isNeedDelete = true
+	//		} else {
+	//			fmt.Print("有效：", utxo.ZQ_Output.ZQ_Value)
+	//			UTXOS = append(UTXOS, utxo)
+	//		}
+	//
+	//		fmt.Println()
+	//	}
+	//
+	//	if isNeedDelete == true {
+	//
+	//		if len(UTXOS) > 0 {
+	//			outsMap[txHash].ZQ_UTXOS = UTXOS
+	//		} else {
+	//			delete(outsMap, txHash)
+	//		}
+	//	}
+	//
+	//}
+	//
+	//return outsMap
+
+
+	//存储已花费UTXO信息
+	var spentableUTXOSMAP = make(map[string][]*TXInput)
+	//存储有效的未花费
+	var utxoMaps = make(map[string]*TXOutputs)
+
+	iterator := blockchain.Iterator()
+
+	for {
+		block := iterator.ZQ_Next()
+
+		for i := len(block.ZQ_Txs) - 1; i >= 0; i-- {
+
+			txOutputs := &TXOutputs{[]*UTXO{}}
+
+			tx := block.ZQ_Txs[i]
+			txHash := hex.EncodeToString(tx.ZQ_TxHash)
+
+			if tx.ZQ_IsCoinbaseTransaction() == false {
+
+				for _, inInput := range tx.ZQ_Vins{
+					txInputHash := hex.EncodeToString(inInput.ZQ_TxHash)
+					spentableUTXOSMAP[txInputHash] = append(spentableUTXOSMAP[txInputHash], inInput)
+				}
+			}
+
+			WorkOutLoop:
+			for index,out := range tx.ZQ_Vouts {
+
+				isSpent := false
+				txInputs := spentableUTXOSMAP[txHash]
+
+				if len(txInputs) > 0 {
+
+					for _, in := range txInputs {
+
+						if index == in.ZQ_Vout && bytes.Compare(out.ZQ_Ripemd160Hash, ZQ_Ripemd160Hash(in.ZQ_PublicKey)) == 0 {
+							isSpent = true
+							continue WorkOutLoop
+						}
+					}
+				}
+
+				if isSpent == false {
+					fmt.Printf("set: %d\n", out.ZQ_Value)
+					utxo := &UTXO{tx.ZQ_TxHash, index, out}
+					txOutputs.ZQ_UTXOS = append(txOutputs.ZQ_UTXOS, utxo)
+				}
+			}
+
+			utxoMaps[txHash] = txOutputs
+		}
+
+		var hashInt big.Int
+		hashInt.SetBytes(block.ZQ_PrevBlockHash)
+
+		if hashInt.Cmp(big.NewInt(0)) == 0{
+			break
+		}
+	}
+
+	return utxoMaps
 }
