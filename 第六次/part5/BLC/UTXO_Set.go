@@ -210,7 +210,6 @@ func (utxoSet *UTXOSet) ZQ_FindSpendableUTXOS(from string, amount int64, txs []*
 
 		if bucket != nil {
 
-			//写成tx.Cursor 找错2小时 。。。。
 			cursor := bucket.Cursor()
 
 			UTXOBREAK:
@@ -222,13 +221,16 @@ func (utxoSet *UTXOSet) ZQ_FindSpendableUTXOS(from string, amount int64, txs []*
 
 				for _, utxo := range txOutputs.ZQ_UTXOS {
 
-					money += utxo.ZQ_Output.ZQ_Value
+					//增加解锁 解决bug
+					if utxo.ZQ_Output.ZQ_UnLockScriptPubKeyWithAddress(from){
+						money += utxo.ZQ_Output.ZQ_Value
 
-					txHash := hex.EncodeToString(utxo.ZQ_TxHash)
-					spentableUTXO[txHash] = append(spentableUTXO[txHash], utxo.ZQ_Index)
+						txHash := hex.EncodeToString(utxo.ZQ_TxHash)
+						spentableUTXO[txHash] = append(spentableUTXO[txHash], utxo.ZQ_Index)
 
-					if money >= amount {
-						break UTXOBREAK
+						if money >= amount {
+							break UTXOBREAK
+						}
 					}
 				}
 			}
